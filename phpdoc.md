@@ -7,7 +7,6 @@ Main Class:
 ===========
 
 The variable $ControlPanel is the instantiated main class, most/the majority functions are called from it.
-	     ^^^^^^^^^^^^^
 			 
 To create a new script with the class instantiated 
 under the given variable include the settings.php 
@@ -89,7 +88,7 @@ FUNCTIONS(main.php listed in appearance order):
 	*************
 	ARRAY VALUES:
 		VAR IS $ServerData (key is case-sensitive btw)
-							^^^^^^^^^^^^^^^^^^^^^^^^^
+
 	"hostname" 		=> 	$host,
 	"version" 		=>	false,
 	"protocol"		=>	false,
