@@ -1,4 +1,4 @@
 MinecraftControlPanel
 =====================
 
-Minecraft Control Panel written as a PHP Web management interface
+Minecraft Control Panel written in PHP, used as a web management interface full of rich features!
