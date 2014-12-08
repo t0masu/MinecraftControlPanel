@@ -39,15 +39,19 @@
 				<div class="row">
 					<div class="col-sm-12 col-lg-12">
 						<div class="jumbotron">
-							<h3>Search for bukkit plugins</h3>
-							<div class="input-group">
-								<input type="text" name="pluginName" class="form-control">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button">Search</button>
-								</span>
-							</div>
+							<form action="/php/plugins/ajaxSearch/ajaxSearch.php" method="POST" id="pluginForm">	
+								<h3>Search for bukkit plugins</h3>
+								<div class="input-group">
+									<input type="text" name="pluginName" class="form-control">
+									<span class="input-group-btn">
+										<button class="btn btn-default" type="submit">Search</button>
+									</span>
+								</div>
+							</form>
 						</div>
-						<?=$ControlPanel->searchPluginDB("worldedit");?>
+						<div class="col-sm-12 col-lg-12" id="returnData">
+							<!-- returned data here -->
+						</div>
 					</div>
 				</div>
 			</div>
@@ -56,5 +60,13 @@
 	
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.js"></script>
-	
+	<script type="text/javascript" src="/js/jquery.form.js"></script>
+	<script>
+		$("#pluginForm").on("submit", function(e){
+			e.preventDefault();
+			$(this).ajaxSubmit({
+				target: '#returnData'
+			}).fadeIn(1200);
+		});
+	</script>
 </html>
