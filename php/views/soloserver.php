@@ -38,10 +38,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-sm-12 col-lg-12">
-						<div class="jumbotron">
-							<h3></h3>
-							<p><?=$_GET['id'];?></p>
-						</div>
+						<?=$ControlPanel->ServerInfo($_GET['id']);?>
 					</div>
 				</div>
 			</div>
@@ -50,5 +47,18 @@
 	
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.js"></script>
-	
+	<script type="text/javascript" src="/js/jquery.form.js"></script>
+	<script>
+		$("#start").click(function(){
+			$('#serverControls').ajaxForm();
+			alert("This page will refresh automagically when the server is started");
+			setTimeout(function(){ location.reload() }, 8000);
+		});
+		$("#stop").click(function(){
+			$('#serverControls').ajaxForm();
+			alert("This page will refresh automagically when the server is stopped");
+			setTimeout(function(){ location.reload() }, 8000);
+		});
+	</script>
+	<div id="return"></div>
 </html>

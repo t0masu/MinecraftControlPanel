@@ -195,10 +195,6 @@
 		
 		} //end of generateServerList function
 		
-		public function serverData($uuid) {
-			
-		} //end of serverData function
-		
 		public function setupSFTPEnvironment($host, $username, $password, $port) {
 			try {
 				$connection = ssh2_connect($host, $port); //connect to the remote server
@@ -323,8 +319,8 @@
 		
 		public function startRemoteServer($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid);
-			if($uuidTokenComparison[2] == 1){
-				$row = $uuidTokenComparison[1]->fetch();
+			if($uuidTokenComparison[1] == 1){
+				$row = $uuidTokenComparison[0]->fetch();
 				$path = $row['serverPath'];
 				$command = $path . "/start.sh start";
 				$command = $this->sendCommandtoRemoteServer($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort'], $command);
@@ -338,8 +334,8 @@
 		
 		public function stopRemoteServer($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid);
-			if($uuidTokenComparison[2] == 1){
-				$row = $uuidTokenComparison[1]->fetch();
+			if($uuidTokenComparison[1] == 1){
+				$row = $uuidTokenComparison[0]->fetch();
 				$path = $row['serverPath'];
 				$command = $path . "/start.sh stop";
 				$command = $this->sendCommandtoRemoteServer($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort'], $command);
@@ -420,6 +416,8 @@
 		} //end of searchPluginDB function
 		
 		public function serverInfo($server) {
+			$token = sha1(mt_rand(1,20).'aBcDeFgHiJkLnMoPqRsTuV');
+			$_SESSION['formToken'] = $token;
 			$st = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE uuid = ? and owner = ?");
 			$st->bindParam(1, $server);
 			$st->bindParam(2, $this->owner);
@@ -428,36 +426,47 @@
 				?>
 					<div class="jumbotron">
 						<h3><?=$row['serverName'];?></h3>
-						
-						<p>
-						
-						<span class="label label-primary">
-							Version: MC <?=$row['serverVersion'];?>
-						</span>
-							&nbsp;
-						<span class="label label-primary">
-							Status: <?php
-										$query = $status = $this->serverStatus($row['serverHost'], $row['serverVersion'], $row['serverPort']);
-										if($query){
-											?>
-												<span class="label label-success">
-													Online
-												</span>
-													&nbsp;
-												<span class="label label-warning">
-													<?=$query['players'] . "/" . $query['maxplayers'];?>
-												</span>
-											<?php
+						<div class="row">
+							<div class="col-sm-4 col-lg-4">
+								<div class="label label-default">
+									Version: 1.7.10
+								</div>
+									&nbsp;
+								<div class="label label-default">
+									Status:
+									<?php
+										$query = $this->serverStatus($row['serverHost'], $row['serverVersion'], $row['serverPort']); //load server status
+										if($query) {
+											echo '<span class="label label-success">Online</span>&nbsp;'; //server online
+											echo '<span class="label label-warning">' . $query['players'] . '/' . $query['maxplayers'] .  '</span>';
 										}else {
-											?>
-												<span class="label label-danger">
-													Offline
-												</span>
-											<?php
-										}
+											echo '<span class="label label-danger">Offline</span>'; //server offline
+										} //end if|else
 									?>
-						</span>
-						</p>
+								</div>
+							</div><!-- end col -->
+							<div class="col-sm-4 col-lg-4 pull-right">
+								<form action="/php/server/controller/controller.php" method="POST" id="serverControls">
+									<input type="hidden" name="token" value="<?=$token;?>">
+									<input type="hidden" name="serverid" value="<?=$server;?>">
+									<input type="submit" name="start" value="Start" class="btn btn-success" id="start">
+									<input type="submit" name="stop" value="Stop" class="btn btn-danger" id="stop">
+								</form>
+							</div><!-- end col -->
+						</div><!-- end row -->
+					</div>
+					
+					<div class="row">
+						<div class="col-sm-6 col-lg-6">
+							<div class="jumbotron">
+								<h4>Plugins</h4>
+							</div>
+						</div>
+						<div class="col-sm-6- col-lg-6">
+							<div class="jumbotron">
+								<h4>Backups</h4>
+							</div>
+						</div>
 					</div>
 				<?php
 			}
