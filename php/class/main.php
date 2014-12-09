@@ -144,7 +144,7 @@
 				
 				$ServerData["version"] = $result[0]; //final version set
 				$ServerData["players"] = $result[sizeof($result)-2]; //final players set
-				$ServerData["maxplayers"] = $result(sizeof($result)-1); //final max players set
+				$ServerData["maxplayers"] = $result[sizeof($result)-1]; //final max players set
 				$ServerData["motd"] = $motd; //final motd set
 				$ServerData["motd_raw"] = $motdraw; //final raw motd data set
 				$ServerData["ping"] = $ping; //final ping set
@@ -417,7 +417,51 @@
 					$i++;
 				}
 			curl_close($ch);
-		} //end of getSlug function
+		} //end of searchPluginDB function
+		
+		public function serverInfo($server) {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE uuid = ? and owner = ?");
+			$st->bindParam(1, $server);
+			$st->bindParam(2, $this->owner);
+			$st->execute();
+			while($row = $st->fetch()) {
+				?>
+					<div class="jumbotron">
+						<h3><?=$row['serverName'];?></h3>
+						
+						<p>
+						
+						<span class="label label-primary">
+							Version: MC <?=$row['serverVersion'];?>
+						</span>
+							&nbsp;
+						<span class="label label-primary">
+							Status: <?php
+										$query = $status = $this->serverStatus($row['serverHost'], $row['serverVersion'], $row['serverPort']);
+										if($query){
+											?>
+												<span class="label label-success">
+													Online
+												</span>
+													&nbsp;
+												<span class="label label-warning">
+													<?=$query['players'] . "/" . $query['maxplayers'];?>
+												</span>
+											<?php
+										}else {
+											?>
+												<span class="label label-danger">
+													Offline
+												</span>
+											<?php
+										}
+									?>
+						</span>
+						</p>
+					</div>
+				<?php
+			}
+		} //end of serverInfo function
 		
 	} //end of class
 ?>
