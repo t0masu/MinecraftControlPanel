@@ -5,7 +5,7 @@
 	*/
 	session_start();
 	include("../../includes/settings.php"); //include settings file
-	if($_SESSION['formToken']){
+	if($_SESSION['formToken'] == $_POST['token']){
 		if($_POST['start']){
 			//start function
 			$ControlPanel->startRemoteServer($_POST['serverid']);
