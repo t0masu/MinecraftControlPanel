@@ -243,14 +243,18 @@
 			}
 		} //end of getServerPluginsList function
 		
-		public function addRemoteServerPlugin(){} //end of addRemoteServerPlugin function
+		public function addRemoteServerPlugin($uuid, $slug) {
+			
+		} //end of addRemoteServerPlugin function
 		
-		public function removeRemoteServerPlugin(){} //end of removeRemoteServerPlugin function
+		public function removeRemoteServerPlugin($uuid, $pluginName) { 
+			
+		} //end of removeRemoteServerPlugin function
 		
 		public function getServerBackupsList($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid); //get comparison and get data array
-			if($uuidTokenComparison[2] == 1){ //check the validity of the request
-				$row = $uuidTokenComparison[2]->fetch(); //fetch rows from the database
+			if($uuidTokenComparison[1] == 1){ //check the validity of the request
+				$row = $uuidTokenComparison[0]->fetch(); //fetch rows from the database
 				$sftp = $this->setupSFTPEnvironment($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort']); //setup sftp environment
 				if(substr($row['serverPath'], -1) == "/"){
 					$path = $path . "backups/"; // add / to the directory loaded from the database
@@ -281,8 +285,8 @@
 		
 		public function createRemoteServerBackup($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid);
-			if($uuidTokenComparison[2] == 1){
-				$row = $uuidTokenComparison[1]->fetch(); //fetch all releveant rows from the database
+			if($uuidTokenComparison[1] == 1){
+				$row = $uuidTokenComparison[0]->fetch(); //fetch all releveant rows from the database
 				$sftp = ssh2_sftp($row['sshHost'], $row['sshUser'], $row['sshPass'] , $row['sshPort']); //setup sftp environment
 				$path = $row['serverPath'];
 				$bkpath = $row['bkpath'];
@@ -311,7 +315,18 @@
 			}
 		} //end of createRemoteServerBackup function
 		
-		public function getServerOperators(){} //end of getServerOperators function
+		public function getServerOperators($uuid) {
+			$uuidTokenComparison = $this->uuidTokenComparison($uuid);
+			if($uuidTokenComparison[1] == 1) {
+				$row = $uuidTokenComparison[0]->fetch();
+				$path = $row['serverPath'];
+				$version = $row['serverVersion'];
+				$sftp = $this->setupSFTPEnvironment($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort']); //setup sftp environment
+				if(preg_match("/1.7|1.8/", $version)) {
+					echo $version;
+				}
+			} //end uuidTokenComparison check
+		} //end of getServerOperators function
 		
 		public function addSelfManagedServer(){} //end of addSelfManagedServer function
 		
@@ -429,7 +444,7 @@
 						<div class="row">
 							<div class="col-sm-4 col-lg-4">
 								<div class="label label-default">
-									Version: 1.7.10
+									Version: <?=$row['serverVersion'];?>
 								</div>
 									&nbsp;
 								<div class="label label-default">
@@ -464,7 +479,10 @@
 						</div>
 						<div class="col-sm-6- col-lg-6">
 							<div class="jumbotron">
-								<h4>Backups</h4>
+								<h4>Ops</h4>
+								<div id="opsReturn">
+									<!-- returned data from ajax ops script -->
+								</div>
 							</div>
 						</div>
 					</div>

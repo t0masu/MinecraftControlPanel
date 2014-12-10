@@ -59,6 +59,13 @@
 			alert("This page will refresh automagically when the server is stopped");
 			setTimeout(function(){ location.reload() }, 8000);
 		});
+		$(function(){
+			setTimeout(function(){
+				$.post('/php/server/operators/getlist.php', {id:"<?=$_GET['id'];?>"}, function(data){
+					$("#opsReturn").html(data).show();
+				});
+			}, 2000);
+		})
 	</script>
 	<div id="return"></div>
 </html>
