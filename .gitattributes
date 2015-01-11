@@ -1,3 +1,4 @@
 css/*.css linguist-vendored
-ls/* linguist-vendored
+js/*.js linguist-vendored
+js/AdminLTE/*.js lingust-vendored
 php/* linguist-vendored=false
