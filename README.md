@@ -14,11 +14,11 @@ A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, m
 1. Clone this repo to the webdir root
 2. Edit the settings file under php/includes/
 3. Chanage the lines to your environment settings
-4a. Create database from the sql file in the repo 
-4b. Generate your own RSA Keys and put them in a directory accessable by the www user and set the path in the database table "cpanel_settings".
-4c. Add your first user to the "cpanel_users" table with the script labelled "first_user.php" and add the chosen password to the first variable
-4d. Run the script and copy/paste the base64_encoded string into the password field when adding the account to the database
-5. Login to the Control Panel with your credentials. Enjoy!
+4. Create database from the sql file in the repo 
+5. Generate your own RSA Keys and put them in a directory accessable by the www user and set the path in the database table "cpanel_settings".
+6. Add your first user to the "cpanel_users" table with the script labelled "first_user.php" and add the chosen password to the first variable
+7. Run the script and copy/paste the base64_encoded string into the password field when adding the account to the database
+8. Login to the Control Panel with your credentials. Enjoy!
 
 Minecraft Control Panel written in PHP, used as a web management interface full of rich features!
 
