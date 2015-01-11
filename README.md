@@ -1,6 +1,8 @@
 MinecraftControlPanel
 =====================
 
+Minecraft Control Panel written in PHP, used as a web management interface full of rich features!
+
 ======
 Status
 ======
@@ -19,8 +21,6 @@ A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, m
 6. Add your first user to the "cpanel_users" table with the script labelled "first_user.php" and add the chosen password to the first variable
 7. Run the script and copy/paste the base64_encoded string into the password field when adding the account to the database
 8. Login to the Control Panel with your credentials. Enjoy!
-
-Minecraft Control Panel written in PHP, used as a web management interface full of rich features!
 
 ========
 Features
