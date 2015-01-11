@@ -13,7 +13,7 @@ Prerequisites
 =============
 A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, must have mysql(PDO) and the libssh-php-5 addons installed on it.
 
-1. Clone this repo to the webdir root
+1. Clone this repo to the webroot dir
 2. Edit the settings file under php/includes/
 3. Chanage the lines to your environment settings
 4. Create database from the sql file in the repo 
