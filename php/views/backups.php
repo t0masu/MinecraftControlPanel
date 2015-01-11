@@ -1,170 +1,225 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-		<meta charset="utf-8">
-		<title>Minecraft Control Panel &middot; Beta v0.1</title>
-		<meta name="generator" content="Minecraft Control Panel - Beta v0.1" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<!--[if lt IE 9]>
-			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-		<![endif]-->
-		<link href="css/styles.css" rel="stylesheet">
-	</head>
-	<body>
-<nav class="navbar navbar-fixed-top header">
- 	<div class="col-md-12">
-        <div class="navbar-header">
-          
-          <a href="." class="navbar-brand">Control Panel</a>
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse1">
-          <i class="glyphicon glyphicon-search"></i>
-          </button>
-      
-        </div>
-        <div class="collapse navbar-collapse" id="navbar-collapse1">
-          <form class="navbar-form pull-left">
-              <div class="input-group" style="max-width:470px;">
-                <input type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
-                <div class="input-group-btn">
-                  <button class="btn btn-default btn-primary" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>MinecraftControlPanel | Dashboard</title>
+        <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+        <!-- Ionicons -->
+        <link href="//code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+        <!-- Morris chart -->
+        <link href="css/morris/morris.css" rel="stylesheet" type="text/css" />
+        <!-- jvectormap -->
+        <link href="css/jvectormap/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
+        <!-- Date Picker -->
+        <link href="css/datepicker/datepicker3.css" rel="stylesheet" type="text/css" />
+        <!-- Daterange picker -->
+        <link href="css/daterangepicker/daterangepicker-bs3.css" rel="stylesheet" type="text/css" />
+        <!-- bootstrap wysihtml5 - text editor -->
+        <link href="css/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet" type="text/css" />
+        <!-- Theme style -->
+        <link href="css/AdminLTE.css" rel="stylesheet" type="text/css" />
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body class="skin-blue">
+        <!-- header logo: style can be found in header.less -->
+        <header class="header">
+            <a href="." class="logo">
+                <!-- Add the class icon to your logo image or logo icon to add the margining -->
+                MinecraftControlPanel
+            </a>
+            <!-- Header Navbar: style can be found in header.less -->
+            <nav class="navbar navbar-static-top" role="navigation">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <div class="navbar-right">
+                    <ul class="nav navbar-nav">
+                        <?php $row = $ControlPanel->accountInfo();?>
+                        <!-- User Account: style can be found in dropdown.less -->
+                        <li class="dropdown user user-menu">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="glyphicon glyphicon-user"></i>
+                                <span><?=$row["first_name"] . " " . $row["last_name"];?> <i class="caret"></i></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <!-- User image -->
+                                <li class="user-header bg-light-blue">
+                                    <img src="img/user-default.png" class="img-circle" alt="User Image" />
+                                    <p>
+                                    	<?=$row["first_name"] . " " . $row["last_name"];?>
+                                        <small>
+                                        	<?php
+												
+												switch($row["auth_level"]) {
+													case 0:
+														?><?="Guest Account";?><?php
+														break;
+													case 1:
+														?><?="Standard Account";?><?php
+														break;
+													case 2:
+														?><?="Manager Account";?><?php
+														break;
+													case 3:
+														?><?="Administrator Account";?><?php
+														break;
+												} //end switch
+											?>
+                                        </small>
+                                    </p>
+                                </li>
+                                <!-- Menu Body -->
+                                <li class="user-body">
+                                    <div class="col-xs-4 text-center">
+                                        <a href="#"></a>
+                                    </div>
+                                    <div class="col-xs-4 text-center">
+                                        <a href="#"></a>
+                                    </div>
+                                    <div class="col-xs-4 text-center">
+                                        <a href="#"></a>
+                                    </div>
+                                </li>
+                                <!-- Menu Footer-->
+                                <li class="user-footer">
+                                    <div class="pull-left">
+                                        <a href="/account" class="btn btn-default btn-flat">Account Settings</a>
+                                    </div>
+                                    <div class="pull-right">
+                                        <a href="/php/logout/logout.php" class="btn btn-default btn-flat">Sign out</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
-              </div>
-          </form>
-          <ul class="nav navbar-nav navbar-right">
-             <li>
-             	<a href="#" class="dropdown-toggle" data-toggle="dropdown"><?=$_SESSION['userToken'];?></a>
-			 	<ul class="dropdown-menu">
-			 	  <li><a href="#"><span class="glyphicon glyphicon-cog"></span> Account Setings</a></li>
-                  <li><a href="php/logout/logout.php">Logout</a></li>
-                </ul>
-             </li>
-             <li>
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-bell"></i></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Server <span class="label label-warning">%id%</span> has been <span class="label label-success">Started!</span></a></li>
-                  <li><a href="#">Server <span class="label label-warning">%id%</span> has been <span class="label label-danger">Stopped!</span></a></li>
-                  <li><a href="#">Server <span class="label label-warning">%id%</span> got <span class="label label-info">Rebooted!</span></a></li>
-                  <li><a href="#">Plugin <span class="label label-warning">%plugin%</span> has been installed on <span class="label label-info">%id%!</span></a></li>
-                </ul>
-             </li>
-             <li><a href="#"><i class="glyphicon glyphicon-user"></i></a></li>
-           </ul>
-        </div>	
-     </div>	
-</nav>
-<div class="navbar navbar-default" id="subnav">
-    <div class="col-md-12">
-        <div class="navbar-header">
-          
-          <a href="/backups" style="margin-left:15px;" class="navbar-btn btn btn-default btn-plus dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-hdd" style="color:#dd1111;"></i> Backups <small><i class="glyphicon glyphicon-chevron-down"></i></small></a>
-          <ul class="nav dropdown-menu">
-	          <li><a href="/"><i class="glyphicon glyphicon-home"></i> Home</a></li>
-	          <li class="nav-divider"></li>
-              <li><a href="/csj"><i class="glyphicon glyphicon-upload"></i> Custom Server Jars</a></li>
-              <li><a href="/plugins"><i class="glyphicon glyphicon-flash"></i> Plugins</a></li>
-              <li><a href="/servers"><i class="glyphicon glyphicon-tasks"></i> Servers</a></li>
-              <li class="nav-divider"></li>
-              <li><a href="/settings"><i class="glyphicon glyphicon-cog" style="color:#dd1111;"></i> Settings</a></li>
-          </ul>
-          
-          
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse2">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          </button>
-      
-        </div>
-     </div>	
-</div>
+            </nav>
+        </header>
+        <div class="wrapper row-offcanvas row-offcanvas-left">
+            <!-- Left side column. contains the logo and sidebar -->
+            <aside class="left-side sidebar-offcanvas">
+                <!-- sidebar: style can be found in sidebar.less -->
+                <section class="sidebar">
+                    <!-- Sidebar user panel -->
+                    <div class="user-panel">
+                        <div class="pull-left image">
+                            <img src="img/user-default.png" class="img-circle" alt="User Image" />
+                        </div>
+                        <div class="pull-left info">
+                            <p>Hello, <?=$row["first_name"];?></p>
+                            <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+                        </div>
+                    </div>
+                    <!-- sidebar menu: : style can be found in sidebar.less -->
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a href=".">
+                                <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/hosts">
+                                <i class="fa fa-th"></i> <span>My Hosts</span>
+                            </a>
+                        </li>
+                        <li>
+							<a href="/servers">
+								<i class="fa fa-hdd-o"></i> <span>My Servers</span>
+							</a>
+						</li>
+						<li class="active">
+							<a href="/backups">
+								<i class="fa fa-copy"></i> <span>My Backups</span>
+							</a>
+						</li>
+						<li>
+							<a href="/plugins">
+								<i class="fa fa-magic"></i> <span>Plugins</span>
+							</a>
+						</li>
+                    </ul>
+                </section>
+                <!-- /.sidebar -->
+            </aside>
 
-<!--main-->
-<div class="container" id="main">
-   <div class="row">
-   <div class="col-md-6 col-sm-6">
-        <div class="panel panel-default">
-          <div class="panel-heading"><h4>Backups completed</h4></div>
-   			<div class="panel-body">
-              <table class="table" id="myTable">
-              	<thead>
-              		<th>File</th>
-              		<th>Size</th>
-              		<th>Download</th>
-              	</thead>
-              	<tbody>
-              		<tr>
-              			<td rel='{"id":$id, "field":$field}'>tomvps.no-ip.org</td>
-              			<td>25565</td>
-              			<td>CraftBukkit</td>
-              			<td>2048M</td>
-              		</tr>
-              	</tbody>
-              </table>
-            </div>
-   		</div>
-        <div class="well"> 
-             <form class="form-horizontal" role="form">
-              <h4>Server Flavours</h4>
-               <div class="form-group" style="padding:14px;">
-			   </div>
-              <button class="btn btn-success pull-right" type="button">Post</button><ul class="list-inline"><li><a href="#"><i class="glyphicon glyphicon-align-left"></i></a></li><li><a href="#"><i class="glyphicon glyphicon-align-center"></i></a></li><li><a href="#"><i class="glyphicon glyphicon-align-right"></i></a></li></ul>
-            </form>
-        </div>
-     
-        <div class="panel panel-default">
-           <div class="panel-heading"><h4>Cron Jobs</h4></div>
-   			<div class="panel-body">
-              <img src="//placehold.it/150x150" class="img-circle pull-right"> <a href="#">Free @Bootply</a>
-              <div class="clearfix"></div>
-              There a load of new free Bootstrap 3 ready templates at Bootply. All of these templates are free and don't require extensive customization to the Bootstrap baseline.
-              <hr>
-              <ul class="list-unstyled"><li><a href="http://www.bootply.com/templates">Dashboard</a></li><li><a href="http://www.bootply.com/templates">Darkside</a></li><li><a href="http://www.bootply.com/templates">Greenfield</a></li></ul>
-            </div>
-         </div> 
+            <!-- Right side column. Contains the navbar and content of the page -->
+            <aside class="right-side">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        My Backups
+                        <small>Control panel</small>
+                    </h1>
+                    <ol class="breadcrumb">
+                        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+                        <li class="active">My Backups</li>
+                    </ol>
+                </section>
 
-	</div>
-  	<div class="col-md-6 col-sm-6">
-      	 
-          <div class="well"> 
-          		<form action="#" method="" class="form">
-          			<h4>Custom server jars</h4>
-          			<div class="form-group">
-          				<input type="file" name="jarfile" class="form-control" />
-          			</div>
-          			<button type="submit" name="submit" class="btn btn-primary">Upload to cache</button>
-          		</form>
-          </div>
+                <!-- Main content -->
+                <section class="content">
+                    <!-- Main row -->
+                    <div class="row">
+                       <div class="col-lg-8 col-sm-8" id="ajaxContent">
+                       		
+                       </div>
+                    </div><!-- /.row (main row) -->
 
-      	 <div class="panel panel-default">
-           <div class="panel-heading"><h4>Latest Server &amp; World Backups</h4></div>
-   			<div class="panel-body">
-              <p><img src="//placehold.it/150x150" class="img-circle pull-right"> <a href="#">The Bootstrap Playground</a></p>
-              <div class="clearfix"></div>
-              <hr>
-              Design, build, test, and prototype using Bootstrap in real-time from your Web browser. Bootply combines the power of hand-coded HTML, CSS and JavaScript with the benefits of responsive design using Bootstrap. Find and showcase Bootstrap-ready snippets in the 100% free Bootply.com code repository.
-            </div>
-         </div>
-      
-      	 <div class="panel panel-default">
-           <div class="panel-heading"><h4>Reminders / Notepad</h4></div>
-   			<div class="panel-body">
-              <ul class="list-group">
-              <li class="list-group-item">Modals</li>
-              <li class="list-group-item">Sliders / Carousel</li>
-              <li class="list-group-item">Thumbnails</li>
-              </ul>
-            </div>
-   		 </div>
-      
-  	</div>
- </div><!--/row-->
-</div><!--/main-->
-	<!-- script references -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-		<script src="js/bootstrap.min.js"></script>
-		<script src="js/scripts.js"></script>
+                </section><!-- /.content -->
+            </aside><!-- /.right-side -->
+        </div><!-- ./wrapper -->
+
+        <!-- add new calendar event modal -->
+
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" type="text/javascript"></script>
+        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.min.js" type="text/javascript"></script>
+        <script src="/js/plugins/jquery.form.js"></script>
+        <!-- Morris.js charts -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+        <script src="js/plugins/morris/morris.min.js" type="text/javascript"></script>
+        <!-- Sparkline -->
+        <script src="js/plugins/sparkline/jquery.sparkline.min.js" type="text/javascript"></script>
+        <!-- jvectormap -->
+        <script src="js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
+        <script src="js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
+        <!-- jQuery Knob Chart -->
+        <script src="js/plugins/jqueryKnob/jquery.knob.js" type="text/javascript"></script>
+        <!-- daterangepicker -->
+        <script src="js/plugins/daterangepicker/daterangepicker.js" type="text/javascript"></script>
+        <!-- datepicker -->
+        <script src="js/plugins/datepicker/bootstrap-datepicker.js" type="text/javascript"></script>
+        <!-- Bootstrap WYSIHTML5 -->
+        <script src="js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js" type="text/javascript"></script>
+        <!-- iCheck -->
+        <script src="js/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
+
+        <!-- AdminLTE App -->
+        <script src="js/AdminLTE/app.js" type="text/javascript"></script>
+        <?php
+			$token = mt_rand(1,3492937039);
+			$_SESSION["token"] = $token;        
+        ?>
+        <script>
+        	$("#ajaxContent").hide();
+        	$(setTimeout(function() {
+	        	$.post("/php/backups/getAllBackups.php", {userid: "<?=$_SESSION["userToken"];?>", token: "<?=$token;?>"}, function(data) {
+		        	$("#ajaxContent").html(data).fadeIn(600);
+	        	});
+        	}, 5000));
+        </script>
 	</body>
 </html>

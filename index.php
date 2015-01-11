@@ -1,11 +1,13 @@
 <?php
+	//error_reporting(E_ALL);
+	//ini_set("display_errors",1);
 	session_start();
 	include("php/includes/settings.php");
 	if($_SESSION['userToken']){
 		if($_GET['p']){
 			switch($_GET['p']){
-				case "csj":
-					include("php/views/csj.php");
+				case "account":
+					include("php/views/account.php");
 					break;
 				case "backups":
 					include("php/views/backups.php");
@@ -21,6 +23,9 @@
 					break;
 				case "settings":
 					include("php/views/settings.php");
+					break;
+				case "plugin":
+					include("php/views/plugin.php");
 					break;
 			}
 		}else {

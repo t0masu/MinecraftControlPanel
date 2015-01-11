@@ -23,8 +23,48 @@
 			$this->datab = null; //database closed
 			$this->isConnected = false; //status set
 		} //end of closeDB function
-
-		//Start Minecraft Server Status functions
+		
+		public function getSettings() {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_settings"); //cpanel settings selected
+			$st->execute(); //execute sql
+			$row = $st->fetch(); //fetch rows
+			return $row;
+		} //end of getSettings function
+		
+		public function accountInfo() {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_users WHERE username = ?");
+			$st->bindParam(1, $_SESSION["userToken"]); //set ? = $_SESSION["userToken"]
+			$st->execute(); //execute query
+			$row = $st->fetch();
+			return $row;
+		} //end of accountInfo function
+		
+		//Start Encrypt/Decrypt functions
+		
+		public function encryptData($data) {
+			$key = fopen(__PUBKEY__, "r"); //open key
+			$pub_key = fread($key, 2048); //read key
+			fclose($key); //close key
+			$key = openssl_get_publickey($pub_key); //public key loaded
+			$encrypted_data = openssl_public_encrypt($data, $output, $pub_key); //encryption takes place...
+			return $output; //encrypted data returned
+		} //end of encryptData function
+		
+		public function decryptData($data) {
+			$key = fopen(__PRIVKEY__, "r"); //open in read only
+			$priv_key = fread($key, 2048); //read private key
+			fclose($key); //close priv_key
+			$decrypted_data = openssl_private_decrypt($data, $output, $priv_key); //decryption takes place...
+			return $output; //return data decrypted ;P
+		} //end of decryptData function
+		
+		/*
+		 *	End Encrypt/Decrypt functions
+		*/
+		
+		/*
+		 *	Start Minecraft Server Status functions
+		*/
 		
 		private function serverConnect($host, $port) {
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); //create socket
@@ -195,17 +235,6 @@
 		
 		} //end of generateServerList function
 		
-		public function setupSFTPEnvironment($host, $username, $password, $port) {
-			try {
-				$connection = ssh2_connect($host, $port); //connect to the remote server
-				ssh2_auth_password($connection, $username, $password); //authenticate with the remote server
-				$sftp = ssh2_sftp($connection); //initalise the sftp environment
-			}catch (Exception $e){
-				throw new Exception("Fail to connect");
-			}
-			return $sftp; //return the final sftp environment
-		} //end of setupSFTPEnvironment
-		
 		public function sendCommandtoRemoteServer($host, $username, $password, $port, $command){
 			$connection = ssh2_connect($host, $port);
 			ssh2_auth_password($connection, $username, $password);
@@ -215,9 +244,13 @@
 		
 		public function getServerPluginsList($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid); //get comparison and get data array
-			if($uuidTokenComparison[2] == 1){
-				$row = $uuidTokenComparison[2]->fetch(); //fetch rows
-				$sftp = $this->setupSFTPEnvironment($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort']); //setup sftp environment
+			if($uuidTokenComparison[1] == 1){
+				$row = $uuidTokenComparison[0]->fetch(); //fetch rows
+				if(!$connection = ssh2_connect($row['sshHost'], $row['sshPort'])) {
+					throw new Exception("Could not connect");
+				}
+				ssh2_auth_password($connection, $row['sshUser'], $row['sshPass']);
+				$sftp = ssh2_sftp($connection);
 				$path = $row['serverPath']; //set the server path on remote server
 				if(substr($path, -1) == "/"){
 					$path = $path . "plugins/"; //add plugins/ to the path
@@ -232,31 +265,110 @@
 						}
 					}
 				} //end while loop
+				if(count($jars) == 0) {
+					?>
+						<tr>
+							<td>You have no plugins!</td>
+						</tr>
+					<?php
+				}
 				for($i = 0; $i < count($jars);){
-					$e = $i + 1; //fixes the id starting on number 0
-						//code here for table, list or what ever
+						?>
+							<tr>
+								<td><?=$jars[$i];?></td>
+								<td>
+									<form action="/php/plugins/removePlugin/removePlugin.php" method="POST" id="removePlugin<?=$i;?>">
+										<input type="hidden" name="filename" value="<?=$jars[$i];?>" />
+										<input type="hidden" name="serverid" value="<?=$uuid;?>" />
+										<button class="btn btn-danger" id="removeBTN<?=$i;?>"><i class="glyphicon glyphicon-minus"></i></button>
+									</form>
+									<script>
+										$("#removePlugin<?=$i;?>").ajaxForm();
+										$("#removeBTN<?=$i;?>").click(function() {
+			alert("Removing plugin");
+			setTimeout(function() {
+				$.post("/php/server/operators/getPlugins.php", {id:"<?=$uuid;?>"}, function(data){
+					$("#plugins").hide();
+					$("#plugins").html(data).fadeIn(1200);
+				});
+			}, 2000);
+		});
+									</script>
+								</td>
+							</tr>
+						<?php
 					$i++;
 				} //end for loop
-				
-			}else {
-				return false; //fails the comparison
-			}
+				unset($connection);
+			} //end of if
 		} //end of getServerPluginsList function
 		
-		public function addRemoteServerPlugin($uuid, $slug) {
-			
+		public function addRemoteServerPlugin($uuid, $slug, $version) {
+			$uuidTokenComparison = $this->uuidTokenComparison($uuid);
+			if($uuidTokenComparison[1] == 1) {
+				$row = $uuidTokenComparison[0]->fetch(); //fetch rows
+				$ch = curl_init(); //curl started
+				curl_setopt($ch, CURLOPT_URL, "http://api.bukget.org/3/plugins/bukkit/$slug"); //curl url
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); //return tranfer
+				$output = curl_exec($ch); //execute curl request
+				$output = json_decode($output, true); //decode the json data returned by BukGet
+				$i = 0;
+				while($i < count($output["versions"])) {
+					if($version == $output["versions"][$i]["version"]) {
+						$downloadUrl = $output["versions"][$i]["download"];
+						$filename = $output["versions"][$i]["filename"];
+						break 1;
+					}
+					$i++;
+				} //end while
+				$path = $row['serverPath'];
+				if(substr($path, -1) != "/") {
+					$path = $path . "/plugins/";
+				} else {
+					$path = $path . "plugins/";
+				}
+				$connection = ssh2_connect($row['sshHost'], $row['sshPort']); //connect to remote server
+				ssh2_auth_password($connection, $row['sshUser'], $row['sshPass']); //authenticate with the remote server *note* need to make an ssh key version of the auth *endnote*
+				if(substr($filename, -4) == ".zip") {
+					$command = "wget -O " . $path . $filename . " " . $downloadUrl . " && screen -dmS unzipPlugin unzip " . $path . $filename . " -d " . $path;
+					$com = ssh2_exec($connection, $command);
+				} else {
+					$command = "wget -O " . $path . $filename . " " . $downloadUrl;
+					$com = ssh2_exec($connection, $command);
+				}
+					echo "Plugin Downloaded!";
+			} //end uuidTokenComparison
 		} //end of addRemoteServerPlugin function
 		
-		public function removeRemoteServerPlugin($uuid, $pluginName) { 
-			
-		} //end of removeRemoteServerPlugin function
+		public function removeRemoteServerPlugin($pluginName, $uuid) {
+			$uuidTokenComparison = $this->uuidTokenComparison($uuid); //uuid token comparison
+			if($uuidTokenComparison[1] == 1) {
+				$row = $uuidTokenComparison[0]->fetch(); //fetch rows
+				if(!$connection = ssh2_connect($row["sshHost"], $row["sshPort"])) {
+					throw new Exception("Could not connect");
+				}
+				ssh2_auth_password($connection, $row["sshUser"], $row["sshPass"]);
+				$path = $row["serverPath"]; //server path
+				if(substr($path, -1) == "/") {
+					$path = $path . "plugins/";
+				} else {
+					$path = $path . "/plugins/";
+				}
+				$command = "mv " . $path . $pluginName . " " . $path . $pluginName . ".old";
+				$execute = ssh2_exec($connection, $command); //execute command
+				unset($connection); //unset ssh connection var
+			} //end uuidTokenComparison
+		} //end of removeRemoteServerPlugin function *note* this function only changes the plugin extension to something not renderable by the server e.g Plugin.jar => Plugin.jar.disabled *endnote*
 		
 		public function getServerBackupsList($uuid){
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid); //get comparison and get data array
-			if($uuidTokenComparison[1] == 1){ //check the validity of the request
+			if($uuidTokenComparison[1] == 1) { //check the validity of the request
 				$row = $uuidTokenComparison[0]->fetch(); //fetch rows from the database
-				$sftp = $this->setupSFTPEnvironment($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort']); //setup sftp environment
-				if(substr($row['serverPath'], -1) == "/"){
+				$connection = ssh2_connect($row['sshHost'], $row['sshPort']);
+				ssh2_auth_password($connection, $row['sshUser'], $row['sshPass']);
+				$sftp = ssh2_sftp($connection);
+				$path = $row['serverPath'];
+				if(substr($path, -1) == "/"){
 					$path = $path . "backups/"; // add / to the directory loaded from the database
 				}else {
 					$path = $path . "/backups/"; // add / and / to the directory loaded from the database
@@ -265,53 +377,121 @@
 				while(false !==($file = readdir($directoryHandle))){
 					if($file != "." && $file != ".."){ 
 						if(substr($file, -4) == ".zip" || ".tar"){
-							$backups[1][] = $file; //filename only
-							$backups[2][] = $path.$file; //end result of the zip and tar file check 
-							foreach($backups[2] as $filename){
-								$data[] = ssh2_sftp_stat($sftp, $filename); //data returned about the file on remote server
-							}
+							$backups[] = $file;
 						}
 					}
 				}//end while loop
-				for($i = 0; $i < count($backups[2]);){
-					$e = $i + 1; //fixes the start on 0 issue
-					//styled return here
-					$i++;
+				unset($connection); //end connection to free memory
+				
+				if(!$backups){
+					?><tr><td>No server backups</td></tr><?php
 				}
-			}else {
-				return false; //fails to comply with the check
+				
+				for($i = 0; $i < count($backups);) {
+						?>
+							<tr>
+								<td><?=$i + 1;?></td>
+								<td><?=$backups[$i];?></td>
+								<td>
+									<form action="/php/server/backups/downloadBackup.php" method="POST" id="downloadBackup">
+										<input type="hidden" name="serverid" value="<?=$uuid;?>" />
+										<input type="hidden" name="filename" value="<?=$backups[$i];?>" />
+										<input type="submit" value="Download" class="btn btn-success" />
+									</form>
+								</td>
+							</tr>
+						<?php
+					$i++;
+				} //end for
 			}
 		}// end of getServerBackupsList function
 		
-		public function createRemoteServerBackup($uuid){
+		public function getAllUserBackups($userToken) {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE owner = ?");
+			$st->bindParam(1, $userToken); //bind $userToken to ?
+			$st->execute(); //execute query
+			$path = $row["serverPath"]; //server path
+			if(substr($path, -1) == "/"){
+				$path = $path . "backups/"; // add / to the directory loaded from the database
+			}else {
+				$path = $path . "/backups/"; // add / and / to the directory loaded from the database
+			}
+			while($row = $st->fetch()) {
+				if(!$connection = ssh2_connect($row["sshHost"], $row["sshPort"])) {
+					throw new Exception();
+				}
+				ssh2_auth_password($connection, $row["sshUser"], $row["sshPass"]); //auth
+				$sftp = ssh2_sftp($connection); //sftp
+				$directoryHandle = opendir("ssh2.sftp://$sftp/$path");
+				while(false !==($file = readdir($directoryHandle))){
+					if($file != "." && $file != ".."){ 
+						if(substr($file, -4) == ".zip" || ".tar"){
+							$backups[] = $file;
+						}
+					}
+				}//end while loop
+				unset($connection);
+				?>
+					<div class="box">
+						<div class="box-header">
+							<h3 class="box-title">
+								<?=$row["serverName"];?>
+							</h3>
+						</div>
+						<div class="box-body">
+							<table class="table table-hover">
+							<tbody>
+							<?php
+								for($i = 0; $i < count($backups);) {
+									?>
+										<tr>
+											<td><?=$i + 1;?></td>
+											<td><?=$backups[$i];?></td>
+											<td>
+												<form action="/php/server/backups/downloadBackup.php" method="POST" id="downloadBackup">
+													<input type="hidden" name="serverid" value="<?=$row["uuid"];?>" />
+													<input type="hidden" name="filename" value="<?=$backups[$i];?>" />
+													<input type="submit" value="Download" class="btn btn-success" />
+												</form>
+											</td>
+										</tr>
+									<?php
+								}
+							?>
+							</tbody>
+							</table>
+						</div>
+						<div class="box-footer">
+						
+						</div>
+					</div>
+				<?php
+				
+			} //end while
+		} //end getAllUserBackups function
+		
+		public function createRemoteServerBackup($uuid) {
 			$uuidTokenComparison = $this->UUIDTokenComparison($uuid);
 			if($uuidTokenComparison[1] == 1){
 				$row = $uuidTokenComparison[0]->fetch(); //fetch all releveant rows from the database
-				$sftp = ssh2_sftp($row['sshHost'], $row['sshUser'], $row['sshPass'] , $row['sshPort']); //setup sftp environment
+				$connection = ssh2_connect($row["sshHost"], $row["sshPort"]);
+				ssh2_auth_password($connection, $row["sshUser"], $row["sshPass"]);
 				$path = $row['serverPath'];
-				$bkpath = $row['bkpath'];
-				if(substr($path, -1) && substr($bkpath, -1) != "/"){
-					$bkpath = $bkpath . "/";
+				if(substr($path, -1) != "/"){
 					$path = $path . "/";
 				}
+				$bkpath = $path . "backups/"; //set bkpath
 				
-				if(preg_match($path, $bkpath)){
-					$command = "tar -cvf --exclude=" . basename($bkpath) . "* " . $bkpath . "backup" . date("Y-m-d H:i:s") . " " . $path . "*";
-					$command = ssh2_exec($connection, $command);
-					if($command){
+				
+					$command = "tar -cvf " . $bkpath . $uuid . "_backup" . date("Y-m-d_H:i:s") . ".tar " . $path . "*  --exclude=" . basename($bkpath);
+					$execute = ssh2_exec($connection, $command);
+					echo $command;
+					if($execute){
 						return true;
 					}else {
 						return false;
 					}
-				}else {
-					$command = "tar -cvf " . $bkpath . "backup" . date("Y-m-d H:i:s") . " " . $path . "*";
-					$command = ssh2_exec($connection, $command);
-					if($command){
-						return true;
-					}else {
-						return false;
-					}
-				}
+				//unset($connection);
 			}
 		} //end of createRemoteServerBackup function
 		
@@ -321,12 +501,76 @@
 				$row = $uuidTokenComparison[0]->fetch();
 				$path = $row['serverPath'];
 				$version = $row['serverVersion'];
-				$sftp = $this->setupSFTPEnvironment($row['sshHost'], $row['sshUser'], $row['sshPass'], $row['sshPort']); //setup sftp environment
+				$connection = ssh2_connect($row['sshHost'], $row['sshPort']);
+				ssh2_auth_password($connection, $row['sshUser'], $row['sshPass']);
+				$sftp = ssh2_sftp($connection);
 				if(preg_match("/1.7|1.8/", $version)) {
-					echo $version;
-				}
+					if(substr($row['serverPath'], -1) == "/"){
+						$path = $path . "ops.json"; // add / to the directory loaded from the database
+					}else {
+						$path = $path . "/ops.json"; // add / and / to the directory loaded from the database
+					}
+					$file = file_get_contents("ssh2.sftp://$sftp/$path");
+					$file = json_decode($file, 1);
+					
+					for($i = 0; $i < count($file);){
+						?>
+							<tr>
+								<td><?=$file[$i]['name'];?></td>
+							</tr>
+						<?php
+						$i++;
+					} //end for loop
+					
+					if(count($file) == 0) {
+						?>
+							<tr>
+								<td>No server operators found</td>
+							</tr>	
+						<?php
+					}
+				} //end preg_match
+				unset($connection);
 			} //end uuidTokenComparison check
 		} //end of getServerOperators function
+		
+		public function getConsoleViewer($uuid) {
+			$uuidTokenComparison = $this->uuidTokenComparison($uuid);
+			if($uuidTokenComparison[1] == 1){
+				$row = $uuidTokenComparison[0]->fetch(); //fetch rows from db relating to this server
+				$path = $row['serverPath']; //server path variable
+				$version = $row['serverVersion'];
+				
+				if(substr($path, -1) != "/"){
+					$path = $path . "/";
+				} //filter path
+				
+				if(preg_match("/1.7|1.8/", $version)) {
+					$path = $path . "logs/latest.log";
+				} else {
+					$path = $path . "server.log";
+				} //end preg_match	
+				
+				//connect to server over ssh
+				$connection = ssh2_connect($row['sshHost'], $row['sshPort']);
+				ssh2_auth_password($connection, $row['sshUser'], $row['sshPass']);
+				$sftp = ssh2_sftp($connection);
+				
+				$file = file_get_contents("ssh2.sftp://$sftp/$path");
+				$file = explode("\n\r", $file);
+				unset($connection);
+				
+				?><pre style="overflow-y: scroll; height: 300px;"><?php
+				
+				foreach($file as $line) {
+					?>
+						<p style="font-size: 14px; font-family: Tahoma;"><?=trim($line)."\n";?></p>
+					<?php
+				} //end foreach
+				
+				?></pre><?php
+			} //end uuidTokenComparison check
+		} //end getConsoleViewer function
 		
 		public function addSelfManagedServer(){} //end of addSelfManagedServer function
 		
@@ -363,12 +607,21 @@
 		} //end of startRemoteServer function
 		
 		public function parceLogin($username, $password) {
-			$sql = $this->datab->prepare("SELECT * FROM cpanel_users WHERE username = ? and password = ?");
+			$sql = $this->datab->prepare("SELECT * FROM cpanel_users WHERE username = ?");
 			$sql->bindParam(1, $username);
-			$sql->bindParam(2, $password);
 			$sql->execute();
 			$count = $sql->rowCount();
-			return $count;
+			if($count != 1) {
+				echo "0"; //echo 0 to script for ajax call
+			} else if($count == 1) {
+				$row = $sql->fetch(); //fetch rows for password comparison
+				$encPass = base64_decode($row["password"]); //encrypted password
+				$decPass = $this->decryptData($encPass); //decrypt pass in db
+				if($password === $decPass) {
+					echo "1"; //password is correct after decryption
+					$_SESSION["userToken"] = $username;
+				}
+			}
 		} //end of parceLogin function
 		
 		
@@ -381,12 +634,34 @@
 				echo "Curl Error: " . curl_error($ch);
 			}
 			$output = json_decode($output, true);
+			curl_close($ch);
 			$i = 0;
 			while($i < count($output)) {
-				?>
-					<div class="jumbotron">
+				if($output[$i]["stage"] != "Deleted") {
+					?>
+						<div class="well">
 							<!-- plugin here -->
-							<h3><?=$output[$i]["plugin_name"];?></h3>
+							<h4><a href="/plugin&slug=<?=$output[$i]["slug"];?>"><?=$output[$i]["plugin_name"];?></a> - 
+								<?php
+									switch($output[$i]["stage"]) {
+										case "Mature":
+											echo "<label class='label label-success'>Mature Project*</label>";
+											break;
+										case "Beta":
+											echo "<label class='label label-warning'>Beta Project</label>";
+											break;
+										case "Alpha":
+											echo "<label class='label label-danger'>Alpha Project</label>";
+											break;
+										case "Inactive":
+											echo "<label class='label label-default'>Inactive Project</label>";
+											break;
+										case "Release":
+											echo "<label class='label label-info'>Release Project</label>";
+											break;
+									}
+								?>
+							</h4>
 							<p><?=$output[$i]["description"];?></p>
 							
 							<div class="row">
@@ -408,14 +683,91 @@
 								<div class="col-sm-4 col-lg-4">
 									<select name="version" class="form-control">
 										<?php
-											$versions = count($output[$i]["versions"][0]["game_versions"]);
-											$x = 0;
-											while($x < $versions){
+											for($x = 0; $x < count($output[$i]['versions']);) {
 												?>
-													<option value="<?=$output[$i]['versions'][0]['game_versions'][$x];?>"><?=$output[$i]['versions'][0]['game_versions'][$x];?></option>
+													<option value="<?=$output[$i]['versions'][$x]['game_versions'][0];?>"><?=$output[$i]['versions'][$x]['game_versions'][0];?></option>
 												<?php
 												$x++;
-											}
+											} //end for
+										?>
+									</select>
+								</div>
+								<div class="col-sm-4 col-lg-4">
+									<button class="btn btn-primary btn-embossed btn-block">Add to server</button>
+								</div>
+							</div>
+						</div>
+					<?php
+				}
+				$i++;
+			}
+		} //end of searchPluginDB function
+		
+		public function searchPluginCatergory($category, $page) {
+			$start = ($page -1) * 10;
+			$ch = curl_init(); //setup curl object
+			curl_setopt($ch, CURLOPT_URL, "http://api.bukget.org/3/categories/$category?start=$start&size=10&fields=slug,plugin_name,versions,stage,description"); //get request to bukget with $slug attached
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$output = curl_exec($ch); //execute curl
+			if(curl_errno($ch)) {
+				echo "Curl Error: " . curl_error($ch);
+			}
+			$output = json_decode($output, true);
+			curl_close($ch); //close curl connection
+			
+			for($i = 0; $i < count($output);) {
+				if($output[$i]["stage"] != "Deleted") {
+					?>
+						<div class="well">
+							<!-- plugin here -->
+							<h4><a href="/plugin&slug=<?=$output[$i]["slug"];?>"><?=$output[$i]["plugin_name"];?></a> - 
+								<?php
+									switch($output[$i]["stage"]) {
+										case "Mature":
+											echo "<label class='label label-success'>Mature Project*</label>";
+											break;
+										case "Beta":
+											echo "<label class='label label-warning'>Beta Project</label>";
+											break;
+										case "Alpha":
+											echo "<label class='label label-danger'>Alpha Project</label>";
+											break;
+										case "Inactive":
+											echo "<label class='label label-default'>Inactive Project</label>";
+											break;
+										case "Release":
+											echo "<label class='label label-info'>Release Project</label>";
+											break;
+									}
+								?>
+							</h4>
+							<p><?=$output[$i]["description"];?></p>
+							
+							<div class="row">
+								<div class="col-sm-4 col-lg-4">
+									<select name="server" class="form-control">
+										 <?php
+										 	//get servers from db
+										 	$data = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE owner = ?");
+										 	$data->bindParam(1,$_SESSION['userToken']);
+										 	$data->execute();
+										 	while($row = $data->fetch()){
+											 	?>
+											 		<option value="<?=$row['uuid'];?>"><?=$row['serverName'];?> - <?=$row['serverVersion'];?></option>
+											 	<?php
+										 	}
+										 ?>
+									</select>
+								</div>
+								<div class="col-sm-4 col-lg-4">
+									<select name="version" class="form-control">
+										<?php
+											for($x = 0; $x < count($output[$i]['versions']);) {
+												?>
+													<option value="<?=$output[$i]['versions'][$x]['game_versions'][0];?>"><?=$output[$i]['versions'][$x]['game_versions'][0];?></option>
+												<?php
+												$x++;
+											} //end for
 										?>
 									</select>
 								</div>
@@ -425,10 +777,135 @@
 							</div>
 						</div>
 				<?php
-					$i++;
 				}
-			curl_close($ch);
-		} //end of searchPluginDB function
+				$i++;
+			} //end for			
+				?>
+				<div class="row">
+					<div class="col-sm-12 col-lg-12" id="pagination">
+					<!-- pagination -->
+							<?php
+								if($page == "1"){
+									?>
+									<p>
+										<a class="btn btn-primary" href="#" data-cat="<?=$category;?>" data-page="<?=$page + 1;?>">Next Page</a>
+									</p>
+									<?php
+								} else {
+									?>
+									<p>
+										<a class="btn btn-primary" href="#" data-cat="<?=$category;?>" data-page="<?=$page - 1;?>">Previous Page</a>
+										<a class="btn btn-primary" href="#" data-cat="<?=$category;?>" data-page="<?=$page + 1;?>">Next Page</a>
+									</p>
+									<?php
+								}
+							?>
+					</div>
+				</div>
+				
+				<script>
+					$("#pagination a").click(function(e){
+						$.post('/php/plugins/ajaxSearch/catergorySearch.php', {cat:$(this).data("cat"), page:$(this).data("page")}, function(data){
+							$("#returnData").html(data).fadeIn(1200);
+						});
+					});
+				</script>
+				<?php
+		} //end of searchPluginCatergory
+		
+		public function pluginInfo($slug) {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, "http://api.bukget.org/3/plugins/bukkit/$slug");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$output = curl_exec($ch); //execute get request
+			if(curl_errno($ch)){
+				echo "Curl Error: " . curl_error($ch);
+			} //curl error has occurred
+			$output = json_decode($output, true); //json decode
+			?>
+				<div class="col-lg-7 col-sm-7">
+					<div class="box">
+						<div class="box-header">
+							<h3 class="box-title">
+								<?=$output["plugin_name"];?> - <label class="label label-success">CraftBukkit/Spigot*</label>
+							</h3>
+						</div>
+						<div class="box-body">
+							<img src="<?=$output["logo_full"];?>" />
+						</div>
+						<div class="box-body">
+							<h5>Author: <p style="display: inline;"><?=$output["authors"][0];?></p></h5>
+							<h5>Description:</h5>
+								<?=$output["description"];?>
+						</div>
+						<div class="box-footer">
+					
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-lg-5 col-sm-5">
+					<div class="box">
+						<div class="box-header">
+							<h3 class="box-title">Install Plugin</h3>
+						</div>
+						<div class="box-body">
+							<form action="/php/plugins/installPlugin/installPlugin.php" method="POST" role="form" id="pluginForm">
+							<div class="row">
+								<div class="col-sm-6 col-lg-6">
+									<h4>Server to install on</h4>
+									<select class="form-control" name="clientServer" id="clientServer">
+										<?php
+											$query = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE owner = ?");
+											$query->bindParam(1, $_SESSION["userToken"]);
+											$query->execute(); //execute query
+											while($row = $query->fetch()) {
+												?>
+													<option value="<?=$row["uuid"];?>"><?=$row["serverName"];?> - Version: <?=$row["serverVersion"];?></option>
+												<?php
+											}
+										?>
+									</select>
+								</div>
+								
+								<div class="col-sm-6 col-lg-6">
+									<h4>Version to install</h4>
+									<select class="form-control" name="pluginVersion" id="pluginversion">
+										<?php
+											for($i = 0; $i < count($output["versions"]);) {
+												?>
+													<option value="<?=$output["versions"][$i]["version"];?>"><?=$output["versions"][$i]["game_versions"][0];?></option>
+												<?php
+												$i++;
+											} //end for
+										?>
+									</select>
+								</div>
+							</div>
+								<p><input type="hidden" name="slug" value="<?=$slug;?>" id="slug" /></p>
+							<div class="row">
+								<div class="col-sm-12 col-lg-12">
+									<button type="submit" id="pluginGO" class="btn btn-primary btn-block btn-embossed">INSTALL!</button>
+								</div>
+							</div>
+							</form>
+						</div>
+						<div class="footer">
+						
+						</div>
+					</div>
+				</div>
+			<?php
+		} //end of pluginInfo function
+		
+		public function getServerStatusById($server) {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE uuid = ? and owner = ?");
+			$st->bindParam(1, $server);
+			$st->bindParam(2, $this->owner);
+			$st->execute();
+			$row = $st->fetch();
+			return $row;
+		} //end of getServerStatusById function
 		
 		public function serverInfo($server) {
 			$token = sha1(mt_rand(1,20).'aBcDeFgHiJkLnMoPqRsTuV');
@@ -439,56 +916,320 @@
 			$st->execute();
 			while($row = $st->fetch()) {
 				?>
-					<div class="jumbotron">
-						<h3><?=$row['serverName'];?></h3>
-						<div class="row">
-							<div class="col-sm-4 col-lg-4">
-								<div class="label label-default">
-									Version: <?=$row['serverVersion'];?>
-								</div>
-									&nbsp;
-								<div class="label label-default">
-									Status:
-									<?php
-										$query = $this->serverStatus($row['serverHost'], $row['serverVersion'], $row['serverPort']); //load server status
-										if($query) {
-											echo '<span class="label label-success">Online</span>&nbsp;'; //server online
-											echo '<span class="label label-warning">' . $query['players'] . '/' . $query['maxplayers'] .  '</span>';
-										}else {
-											echo '<span class="label label-danger">Offline</span>'; //server offline
-										} //end if|else
-									?>
-								</div>
-							</div><!-- end col -->
-							<div class="col-sm-4 col-lg-4 pull-right">
-								<form action="/php/server/controller/controller.php" method="POST" id="serverControls">
-									<input type="hidden" name="token" value="<?=$token;?>">
-									<input type="hidden" name="serverid" value="<?=$server;?>">
-									<input type="submit" name="start" value="Start" class="btn btn-success" id="start">
-									<input type="submit" name="stop" value="Stop" class="btn btn-danger" id="stop">
-								</form>
-							</div><!-- end col -->
-						</div><!-- end row -->
-					</div>
+					<div class="col-lg-7 col-sm-7">
+						<div class="box">
+                                <div class="box-header">
+                                    <h3 class="box-title"><?=$row["serverName"];?></h3>
+                                    <div class="box-tools pull-right">
+                                        <button class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title="" data-original-title="Collapse"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                </div>
+                                <div class="box-body">
+                                    <div class="row">
+										<div class="col-lg-8 col-sm-8">
+											<p id="status">
+												Status:
+												<?php
+													$query = $this->serverStatus($row['serverHost'], $row['serverVersion'], $row['serverPort']); //load server status
+													if($query) {
+														echo '<span class="label label-success">Online</span>&nbsp;'; //server online
+														echo '<span class="label label-warning" id="players">' . $query['players'] . '/' . $query['maxplayers'] .  '</span>';
+													}else {
+														echo '<span class="label label-danger">Offline</span>'; //server offline
+													} //end if|else
+												?> 
+											</p>
+											<p>
+												Version: <span class="label label-info label-xl"><?=$row["serverVersion"];?></span> &nbsp;
+												Running: <span class="label label-default"><?=$row["serverVendor"];?></span>
+											</p>
+										</div>
+										<div class="col-lg-4 col-sm-4 pull-right">
+											<form action="/php/server/controller/controller.php" method="POST" id="serverControls">
+												<input type="hidden" name="token" value="<?=$token;?>">
+												<input type="hidden" name="serverid" value="<?=$server;?>">
+												<input type="submit" name="start" value="Start" class="btn btn-success" id="start">
+												<input type="submit" name="stop" value="Stop" class="btn btn-danger" id="stop">
+											</form>
+										</div>
+                                    </div>
+                                </div><!-- /.box-body -->
+                                <div class="box-footer">
+                                    
+                                </div><!-- /.box-footer-->
+                            </div>
+                         <div class="box">
+                         	<div class="box-header">
+                         		<h3 class="box-title">Server Operators</h3>
+                         		<div class="box-tools pull-right">
+                         			<button class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title="" data-original-title"Collapse"><i class="fa fa-minus"></i></button>
+                         		</div>
+                         	</div>
+                         	<div class="box-body">
+                         		<table class="table table-hover">
+                         			<thead>
+                         				<tr>
+                         					<th>In Game Name</th>
+                         					<th></th>
+                         				</tr>
+                         			</thead>
+                         			<tbody id="ops">
+                         				
+                         			</tbody>
+                         		</table>
+                         	</div>
+                         	<div class="box-footer">
+                         		
+                         	</div>
+                         </div>
+                         
+                         <div class="box">
+                         	<div class="box-header">
+                         		<h3 class="box-title">Server Plugins</h3>
+                         		<div class="box-tools pull-right">
+                         			<button class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title="" data-original-title"Collapse"><i class="fa fa-minus"></i></button>
+                         		</div>
+                         	</div>
+                         	<div class="box-body">
+                         		<table class="table table-hover">
+                         			<thead>
+                         				<tr>
+                         					<th>Plugin Name</th>
+                         					<th></th>
+                         				</tr>
+                         			</thead>
+                         			<tbody id="plugins">
+                         				
+                         			</tbody>
+                         		</table>
+                         	</div>
+                         	<div class="box-footer">
+                         		
+                         	</div>
+                         </div>
+					</div><!-- end col-lg-7 col-sm-7 -->
 					
-					<div class="row">
-						<div class="col-sm-6 col-lg-6">
-							<div class="jumbotron">
-								<h4>Plugins</h4>
+					<div class="col-lg-5 col-sm-5">
+						<div class="box">
+							<div class="box-header">
+								<h3 class="box-title">Server Backups</h3>
+								<div class="box-tools pull-right">
+									<button class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title="" data-original-title"Collapse"><i class="fa fa-minus"></i></button>
+								</div>
+							</div>
+							<div class="box-body">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>
+												#
+											</th>
+											<th>
+												Backup Name
+											</th>
+											<th>
+												<div class="pull-right">
+													<form action="/php/server/backups/createBackup.php" method="POST" id="createBackup">
+														<input type="hidden" id="serverid" name="serverid" value="<?=$server;?>" />
+														<input type="submit" id="crBK" value="+" class="btn btn-success" />
+													</form>
+												</div>
+											</th>
+										</tr>
+									</thead>
+									<tbody id="backups">
+										
+									</tbody>
+								</table>
 							</div>
 						</div>
-						<div class="col-sm-6- col-lg-6">
-							<div class="jumbotron">
-								<h4>Ops</h4>
-								<div id="opsReturn">
-									<!-- returned data from ajax ops script -->
+						
+						<div class="box">
+							<div class="box-header">
+								<h3 class="box-title">Console</h3>
+								<div class="box-tools pull-right">
+                         			<button class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title="" data-original-title"Collapse"><i class="fa fa-minus"></i></button>
+                         		</div>
+							</div>
+							<div class="box-body">
+								<div id="console">
+									
 								</div>
+							</div>
+							<div class="box-footer">
+								
+							</div>
+						</div>
+					</div><!-- end col-lg-5 col-sm-5 -->
+				<?php
+			}
+		} //end of serverInfo function
+		
+		public function dashboardCounters() {
+			$sql = $this->datab->prepare("SELECT * FROM cpanel_servers WHERE owner = ?");
+			$sql->bindParam(1, $_SESSION["userToken"]);
+			$sql->execute(); //execute query
+			$count = $sql->rowCount(); //count rows
+			
+			$sql2 = $this->datab->prepare("SELECT * FROM cpanel_hosts WHERE node_owner = ?");
+			$sql2->bindParam(1, $_SESSION["userToken"]);
+			$sql2->execute(); //execute
+			$count2 = $sql2->rowCount(); 
+			
+			$sql3 = $this->datab->prepare("SELECT * FROM cpanel_jarRepo");
+			$sql3->execute();
+			$count3 = $sql3->rowCount();
+			
+			?>
+				<div class="col-lg-3 col-xs-6">
+                            <!-- small box -->
+                            <div class="small-box bg-aqua">
+                                <div class="inner">
+                                    <h3>
+                                       	<?=$count;?>
+                                    </h3>
+                                    <p>
+                                        Server(s) deployed
+                                    </p>
+                                </div>
+                                <a href="#" class="small-box-footer">
+                                   
+                                </a>
+                            </div>
+                        </div><!-- ./col -->
+                        <div class="col-lg-3 col-xs-6">
+                            <!-- small box -->
+                            <div class="small-box bg-green">
+                                <div class="inner">
+                                    <h3>
+                                        <?=$count2;?>
+                                    </h3>
+                                    <p>
+                                       	Host(s) usable
+                                    </p>
+                                </div>
+                                <a href="#" class="small-box-footer">
+                                   
+                                </a>
+                            </div>
+                        </div><!-- ./col -->
+                        <div class="col-lg-3 col-xs-6">
+                            <!-- small box -->
+                            <div class="small-box bg-yellow">
+                                <div class="inner">
+                                    <h3>
+                                        18,565
+                                    </h3>
+                                    <p>
+                                        Plugins available
+                                    </p>
+                                </div>
+                                <a href="#" class="small-box-footer">
+                                  
+                                </a>
+                            </div>
+                        </div><!-- ./col -->
+                        <div class="col-lg-3 col-xs-6">
+                            <!-- small box -->
+                            <div class="small-box bg-red">
+                                <div class="inner">
+                                    <h3>
+                                    	<?=$count3;?>
+                                    </h3>
+                                    <p>
+                                    	Alternative server softwares available
+                                    </p>
+                                </div>
+                                <a href="#" class="small-box-footer">
+                                
+                                </a>
+                            </div>
+                        </div><!-- ./col -->
+			<?php
+		} //end of dashboardPage function
+		
+		public function getAccountSettings($username) {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_users WHERE username = ?");
+			$st->bindParam(1, $username); //bind param to ?
+			$st->execute(); //exeucte sql query
+			while($row = $st->fetch()) {
+				?>
+					<div class="col-lg-12 col-sm-12">
+						<div class="box">
+							<div class="box-header">
+								<h3 class="box-title">
+									Account settings
+								</h3>
+							</div>
+							<div class="box-body">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Login Name</th>
+											<th>Minecraft Account Name</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td><?=$row["first_name"] . " " . $row["last_name"];?></td>
+											<td><?=$row["username"];?></td>
+											<td>
+												<?php
+													if($row["minecraft_account_name"] == "") {
+														?>
+															No account linked!
+														<?php
+													} else {
+														echo $row["minecraft_account_name"];
+													}
+												?>
+											</td>
+											<td>
+												<a href="#" data-toggle="modal" data-target="#myModal" class="btn btn-warning">Change account password</a>
+												<?php
+													if($row["minecraft_account_name"] == "") {
+														?>
+															<a href="#" class="btn btn-success">Link Minecraft Account</a>
+														<?php
+													} else {
+														?>
+															<a href="#" class="btn btn-danger">Unlink Minecraft Account</a>
+														<?php
+													}
+												?>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="box-footer">
+					
 							</div>
 						</div>
 					</div>
 				<?php
 			}
-		} //end of serverInfo function
+		} //end getAccountSettings function
 		
-	} //end of class
+		public function updateUserPassword($oldPass, $newPass) {
+			$st = $this->datab->prepare("SELECT * FROM cpanel_users WHERE username = ?");
+			$st->bindParam(1, $_SESSION["userToken"]);
+			$st->execute();
+			$row = $st->fetch();
+			
+			$oldPassDB = $this->decryptData(base64_decode($row["password"]));
+			if($oldPass == $oldPassDB) {
+				$newPassDB = base64_encode($this->encryptData($newPass));
+				$sta = $this->datab->prepare("UPDATE cpanel_users SET password = ? WHERE id = ?");
+				$sta->bindParam(1, $newPassDB);
+				$sta->bindParam(2, $row["id"]);
+				$sta->execute();
+				echo "Password has been updated successfully!";
+			} else {
+				die("Old password did not match our records");
+			}
+		} //end updateUserPassword function
+
+	} //end of ControlPanel class
 ?>
