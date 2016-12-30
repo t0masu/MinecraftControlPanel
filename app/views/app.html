@@ -2,12 +2,13 @@
 <html ng-app="minecraftControlPanel" ng-class="{'bg-black': $state.current.name == 'login'}">
     <head>
         <meta charset="utf-8">
-        <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <base href="/">
         <title>MinecraftControlPanel</title>
         <link rel="stylesheet" href="/components/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="/components/font-awesome/css/font-awesome.min.css">
-        <link rel="stylesheet" href="/app/styles/adminlte.css">
+        <link rel="stylesheet" href="/app/adminlte/adminlte.css">
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -15,18 +16,23 @@
           <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
     </head>
-    <body ng-controller="topLevelController" ng-class="{'bg-black': $state.current.name == 'login'}">
-        <ui-view></ui-view>
+    <body ng-controller="topLevelController" ng-class="{'bg-black': $state.current.name == 'login', 'skin-blue': $state.current.name !== 'login'}" ui-view>
 
         <script src="/components/angular/angular.min.js" charset="utf-8"></script>
         <script src="/components/angular-ui-router/release/angular-ui-router.min.js" charset="utf-8"></script>
         <script src="/components/jquery/dist/jquery.min.js" charset="utf-8"></script>
+        <script src="/components/jquery-slimscroll/jquery.slimscroll.min.js" charset="utf-8"></script>
         <script src="/components/bootstrap/dist/js/bootstrap.min.js" charset="utf-8"></script>
+        <script src="/app/adminlte/adminlte.js" charset="utf-8"></script>
         <script src="/app/angular/app.module.js" charset="utf-8"></script>
         <script src="/app/angular/app.routes.js" charset="utf-8"></script>
         <script src="/app/angular/app.services.js" charset="utf-8"></script>
 
         <!-- Load controllers -->
         <script src="/app/angular/components/login/loginController.js" charset="utf-8"></script>
+        <script src="/app/angular/components/dashboard/dashboardController.js" charset="utf-8"></script>
+        <script src="/app/angular/components/hosts/hostsController.js" charset="utf-8"></script>
+        <script src="/app/angular/components/servers/serversController.js" charset="utf-8"></script>
+        <script src="/app/angular/components/logout/logoutController.js" charset="utf-8"></script>
     </body>
 </html>

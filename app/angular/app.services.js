@@ -65,3 +65,8 @@ minecraftControlPanel.factory('Auth', [
         }
     }
 ]);
+
+minecraftControlPanel.service('dashboardService', ['$http', function($http)
+{
+    var that = this;
+}]);
