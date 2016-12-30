@@ -1,0 +1,35 @@
+<div class="form-box" id="login-box">
+    <div class="header">Sign In</div>
+    <form action="/php/login/auth.php" method="POST" id="loginForm">
+        <div class="body bg-gray">
+            <div id="success" class="alert alert-success alert-dismissable" style="display: none">
+            <i class="fa fa-check"></i>
+            <b>Authentication Successful!</b> You will be transferred shortly.
+        </div>
+        <div id="error" class="alert alert-danger alert-dismissable" style="display: none">
+            <i class="fa fa-ban"></i>
+            <b>Authentication Unsuccessful!</b> Your username or password was not correct. Please try again
+        </div>
+            <div class="form-group">
+                <input type="text" name="username" id="username" class="form-control" placeholder="User ID"/>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Password"/>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" name="remember_me"/> Remember me
+            </div>
+        </div>
+        <div class="footer">
+            <input type="submit" class="btn bg-olive btn-block" value="Sign me in">
+
+            <p><a href="#">I forgot my password</a></p>
+
+            <a href="register.html" class="text-center">Register a new membership</a>
+        </div>
+    </form>
+
+    <div class="margin text-center">
+        <span>MinecraftControlPanel &middot; t0masu</span>
+    </div>
+</div>
