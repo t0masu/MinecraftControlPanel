@@ -20,6 +20,9 @@ html, body {
     min-height: 100%;
     background: #f9f9f9;
 }
+body {
+    overflow-x: hidden;
+}
 a {
     color: #3c8dbc;
 }

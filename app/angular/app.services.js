@@ -3,20 +3,7 @@ minecraftControlPanel.service('loginService', [
     '$http',
     function($http) {
         this.parseLogin = function(data) {
-            return $http({
-                method: 'POST',
-                url: CONFIG.API_URL + "auth/login",
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                transformRequest: function(obj) {
-                    var str = [];
-                    for (var p in obj)
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                    return str.join("&");
-                },
-                data: data
-            })
+            return $http.post("/auth/login", data);
         }
     }
 ]);
@@ -60,7 +47,7 @@ minecraftControlPanel.factory('Auth', [
         function decodeJWT() {
             if (validToken()) {
                 var token_parts = getToken().split('.');
-                return angular.fromJson(atob(token_parts[1]))._doc;
+                return angular.fromJson(atob(token_parts[1]));
             }
         }
     }

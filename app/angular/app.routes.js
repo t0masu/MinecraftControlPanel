@@ -15,14 +15,20 @@ minecraftControlPanel.config(function($urlRouterProvider, $locationProvider, $st
             name: 'logout',
             url: '/logout',
             controller: 'logoutController',
-            controllerAs: 'lC'
+            controllerAs: 'lC',
+            data: {
+                requireAuth: true
+            }
         })
         .state('dashboard', {
             name: 'dashboard',
             url: '/dashboard',
             templateUrl: '/app/views/dashboard/dashboard.tpl.html',
             controller: 'dashboardController',
-            controllerAs: 'dC'
+            controllerAs: 'dC',
+            data: {
+                requireAuth: true
+            }
         })
         .state('dashboard.hosts', {
             name: 'hosts',
@@ -62,28 +68,28 @@ minecraftControlPanel.config(function($urlRouterProvider, $locationProvider, $st
 });
 
 // Prevents user from views that they shouldn't be able to see
-// minecraftControlPanel.run([
-//     '$rootScope',
-//     '$state',
-//     '$window',
-//     'Auth',
-//     function($rootScope, $state, $window, Auth) {
-//         $rootScope.$on('$stateChangeStart', function(e, to) {
-//             validToken = Auth.validToken();
-//             if (to.name == "login") {
-//                 if (validToken == true) {
-//                     e.preventDefault();
-//                     $state.go('dashboard');
-//                     $state.reload();
-//                 } else {
-//                     return;
-//                 }
-//             } else {
-//                 if (to.data.requireAuth && !validToken) {
-//                     e.preventDefault();
-//                     $state.go('login');
-//                 }
-//             }
-//         });
-//     },
-// ]);
+minecraftControlPanel.run([
+    '$rootScope',
+    '$state',
+    '$window',
+    'Auth',
+    function($rootScope, $state, $window, Auth) {
+        $rootScope.$on('$stateChangeStart', function(e, to) {
+            validToken = Auth.validToken();
+            if (to.name == "login") {
+                if (validToken == true) {
+                    e.preventDefault();
+                    $state.go('dashboard');
+                    $state.reload();
+                } else {
+                    return;
+                }
+            } else {
+                if (to.data.requireAuth && !validToken) {
+                    e.preventDefault();
+                    $state.go('login');
+                }
+            }
+        });
+    },
+]);

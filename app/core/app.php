@@ -23,8 +23,8 @@ class Application
         // check for controller: no controller given ? then load start-page
         if (!$this->url_controller) {
             require APP . 'views/app.html';
-        } elseif (file_exists(APP . 'controller/' . $this->url_controller . '.php')) {
-            require APP . 'controller/' . $this->url_controller . '.php';
+        } elseif (file_exists(APP . 'controllers/' . $this->url_controller . '.php')) {
+            require APP . 'controllers/' . $this->url_controller . '.php';
             $this->url_controller = new $this->url_controller();
 
             if (method_exists($this->url_controller, $this->url_action)) {
@@ -43,10 +43,12 @@ class Application
                     $this->url_controller->index();
                 }
                 else {
+                    // require APP . 'views/app.html';
                     require APP . 'views/app.html';
                 }
             }
         } else {
+            // require APP . 'views/app.html';
             require APP . 'views/app.html';
         }
     }
@@ -62,7 +64,7 @@ class Application
             $url = trim($_GET['url'], '/');
             $url = filter_var($url, FILTER_SANITIZE_URL);
             $url = explode('/', $url);
-            
+
             $this->url_controller = isset($url[0]) ? $url[0] : null;
             $this->url_action = isset($url[1]) ? $url[1] : null;
             unset($url[0], $url[1]);
