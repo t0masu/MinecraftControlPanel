@@ -40,13 +40,13 @@ class userModel {
 
                 //create jwt
                 $payload = (object) array(
+                    "id" => $user['userId'],
                     "user" => $user['username'],
                     "firstName" => $user['firstName'],
                     "lastName" => $user['lastName'],
                     "access" => $user['status']
                 );
 
-                require_once 'jwt.php';
                 $jwt = new JWT();
 
                 $token = $jwt->encode($payload, JWT_KEY);
@@ -68,4 +68,10 @@ class userModel {
             }
         }
     } //end of parseLogin
+
+    public function getAccountInformation()
+    {
+
+        $sql = $this->db->prepare("SELECT firstName, lastName, username, minecraftUsername FROM users WHERE username = ?");
+    }
 }

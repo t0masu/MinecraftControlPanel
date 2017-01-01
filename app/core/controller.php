@@ -38,6 +38,21 @@ class Controller
     {
         // User model for auth and userdata
         require_once APP. 'models/user.php';
+        require_once APP. 'models/dashboard.php';
+        require_once APP . 'models/hosts.php';
+        require_once APP . 'models/servers.php';
+
         $this->userModel = new userModel($this->db);
+        $this->dashboardModel = new dashboardModel($this->db);
+
+        $this->hostsModel = new hostsModel($this->db);
+        $this->serversModel = new serversModel($this->db);
+    }
+
+    public function verifyJWT()
+    {
+        $jwt = new JWT();
+        $tokenData = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+        return $jwt->decode($tokenData, JWT_KEY);
     }
 }

@@ -64,7 +64,7 @@ minecraftControlPanel.config(function($urlRouterProvider, $locationProvider, $st
             templateUrl: '/app/views/account/account.tpl.html',
             controller: 'accountController',
             controllerAs: 'aC'
-        })
+        });
 });
 
 // Prevents user from views that they shouldn't be able to see

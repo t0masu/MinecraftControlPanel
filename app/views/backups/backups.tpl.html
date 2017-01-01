@@ -14,7 +14,7 @@
 <section class="content">
     <!-- Main row -->
     <div class="row">
-        <div class="col-lg-11 col-sm-10">
+        <div class="col-lg-10 col-md-9 col-sm-9">
             <div class="box">
                 <div class="box-header">
                     <h3 class="box-title">Backups</h3>
@@ -32,15 +32,21 @@
                 <!-- /.box-header -->
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Size (Mb)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr>
-                                <th>UUID</th>
-                                <th>Name</th>
-                                <th>Host</th>
-                                <th>Port</th>
-                                <th>Version</th>
+                                <td>Example-server-backup-20-12-2016.tar</td>
+                                <td>200 MB</td>
+                                <td>
+                                    <a ng-click="" class="btn btn-success btn-block">Download</a>
+                                </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -48,7 +54,7 @@
             </div>
         </div>
 
-        <div class="col-lg-1 col-sm-1">
+        <div class="col-lg-2 col-md-3 col-sm-3">
             <a class="btn btn-success btn-block" ng-click="hC.createHost()">Create backup</a>
         </div>
     </div>

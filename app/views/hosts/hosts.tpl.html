@@ -14,13 +14,13 @@
 <section class="content">
     <div class="row">
 
-        <div class="col-lg-11 col-sm-10">
+        <div class="col-lg-10 col-md-9 col-sm-9">
             <div class="box">
                 <div class="box-header">
                     <h3 class="box-title">Hosts Deployed</h3>
                     <div class="box-tools">
                         <div class="input-group">
-                            <input type="text" name="table_search" class="form-control input-sm pull-right" style="width: 150px;" placeholder="Search">
+                            <input type="text" class="form-control input-sm pull-right" style="width: 150px;" placeholder="Search" ng-model="hostsSearch">
                             <div class="input-group-btn">
                                 <button class="btn btn-sm btn-default">
                                     <i class="fa fa-search"></i>
@@ -32,22 +32,30 @@
                 <!-- /.box-header -->
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-hover">
-                        <tbody>
+                        <thead>
                             <tr>
-                                <th>UUID</th>
                                 <th>Name</th>
                                 <th>Host</th>
                                 <th>Port</th>
-                                <th>Version</th>
+                                <th>Status</th>
                             </tr>
-
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="item in hC.hostsData | filter: hostsSearch">
+                                <td>{{item.hostName}}</td>
+                                <td>{{item.hostAddress}}</td>
+                                <td>{{item.hostPort}}</td>
+                                <td>
+                                    <label class="label label-success">A</label>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
                 <!-- /.box-body -->
             </div>
         </div>
-        <div class="col-lg-1 col-sm-1">
+        <div class="col-lg-2 col-md-3 col-sm-3">
             <a class="btn btn-success btn-block" ng-click="hC.createHost()">Create host</a>
             <a class="btn btn-warning btn-block">Reboot All</a>
             <a class="btn btn-danger btn-block">Stop All</a>
