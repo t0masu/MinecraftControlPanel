@@ -67,4 +67,15 @@ class hostsModel
         }
 
     }
+
+    public function getHostById($input)
+    {
+        $id = $input['hostId'];
+        $sql = $this->db->prepare("SELECT * FROM hosts WHERE hostId = ?");
+        $sql->bindParam(1, $id);
+        $sql->execute();
+        $data = $sql->fetch(PDO::FETCH_ASSOC);
+
+        return $data;
+    }
 }

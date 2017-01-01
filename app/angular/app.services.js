@@ -84,4 +84,9 @@ minecraftControlPanel.service('serversService', ['$http', function($http) {
     {
         return $http.get("/api/servers/all");
     };
+
+    this.createServerOnHost = function(data)
+    {
+        return $http.post("/api/servers/onHost", data);
+    }
 }]);
