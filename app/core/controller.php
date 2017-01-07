@@ -42,6 +42,7 @@ class Controller
         require_once APP . 'models/hosts.php';
         require_once APP . 'models/servers.php';
         require_once APP . 'models/minecraft.php';
+        require_once APP . 'models/account.php';
 
         $this->userModel = new userModel($this->db);
         $this->dashboardModel = new dashboardModel($this->db);
@@ -49,6 +50,7 @@ class Controller
         $this->hostsModel = new hostsModel($this->db);
         $this->serversModel = new serversModel($this->db);
         $this->minecraftModel = new minecraft();
+        $this->accountModel = new account($this->db);
     }
 
     public function verifyJWT()

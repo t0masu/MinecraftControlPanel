@@ -77,12 +77,37 @@ class Api extends Controller
                 case "versions":
                     $this->minecraftModel->fetchMinecraftVersions();
                     break;
-                    $this->minecraftModel->fetchMinecraftVersions();
-                    break;
                 case "":
 
                     break;
             }
         }
     }
+
+    public function account($param)
+    {
+        $jwt = $this->verifyJWT();
+        if($jwt)
+        {
+            switch($param)
+            {
+                case "getAccountData":
+                    $this->accountModel->getAccountData($jwt);
+                    break;
+                case "changePassword":
+                    $formData = json_decode(file_get_contents("php://input"), 1);
+                    $this->accountModel->changePassword($jwt, $formData);
+                    break;
+                case "linkAccount":
+                    $formData = json_decode(file_get_contents("php://input"), 1);
+                    $this->accountModel->linkAccount($jwt, $formData);
+                    break;
+                case "unlinkAccount":
+                    $this->accountModel->unlinkAccount($jwt);
+                    break;
+            }
+        }
+    }
+
+
 }

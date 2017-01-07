@@ -90,3 +90,28 @@ minecraftControlPanel.service('serversService', ['$http', function($http) {
         return $http.post("/api/servers/onHost", data);
     }
 }]);
+
+minecraftControlPanel.service('accountService', ['$http', function($http)
+{
+    var that = this;
+
+    this.getAccountData = function()
+    {
+        return $http.get("/api/account/getAccountData");
+    }
+
+    this.changePassword = function(data)
+    {
+        return $http.post("/api/account/changePassword", data);
+    };
+
+    this.linkAccount = function(data)
+    {
+        return $http.post("/api/account/linkAccount", data);
+    };
+
+    this.unlinkAccount = function()
+    {
+        return $http.get("/api/account/unlinkAccount");
+    }
+}]);

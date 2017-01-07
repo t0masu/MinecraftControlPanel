@@ -36,18 +36,13 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><?=$row["first_name"] . " " . $row["last_name"];?></td>
-                                <td><?=$row["username"];?></td>
+                                <td>{{aC.accountData.firstName + ' ' + aC.accountData.lastName}}</td>
+                                <td>{{aC.accountData.username}}</td>
                                 <td>
-                                    <?php
-                                        if($row["minecraft_account_name"] == "") {
-                                            ?>
-                                    No account linked!
-                                <?php
-                                        } else {
-                                            echo $row["minecraft_account_name"];
-                                        }
-                                    ?>
+                                    {{
+                                        (aC.accountData.minecraftUsername) ?
+                                        aC.accountData.minecraftUsername : 'Not linked'
+                                    }}
                                 </td>
                             </tr>
                         </tbody>
@@ -67,12 +62,15 @@
                 <div class="box-body">
                     <div class="row">
                         <div class="col-lg-6">
-                            <a href="#" data-toggle="modal" data-target="#myModal" class="btn btn-warning btn-block">Change account password</a>
+                            <a href="#" ng-click="aC.changePassword()" class="btn btn-warning btn-block">Change account password</a>
                         </div>
 
-                        <div class="col-lg-6">
-                            <a href="#" class="btn btn-success btn-block">Link Minecraft Account</a>
-                            <!-- <a href="#" class="btn btn-danger">Unlink Minecraft Account</a> -->
+                        <div class="col-lg-6" ng-show="aC.accountData.minecraftUsername.length == null">
+                            <a href="#" ng-click="aC.linkAccount()" class="btn btn-success btn-block">Link Minecraft Account</a>
+                        </div>
+
+                        <div class="col-lg-6" ng-show="aC.accountData.minecraftUsername.length > 0">
+                            <a href="#" class="btn btn-danger btn-block" ng-click="aC.unlinkAccount()" >Unlink Minecraft Account</a>
                         </div>
                     </div>
                 </div>
