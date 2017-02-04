@@ -1,0 +1,84 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        My Account
+        <small>Control panel</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li>
+            <a href="#">
+                <i class="fa fa-dashboard"></i>
+                Home</a>
+        </li>
+        <li class="active">Account Settings</li>
+    </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <!-- Main row -->
+    <div class="row">
+        <div class="col-lg-4 col-sm-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">
+                        Linked information
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Login Name</th>
+                                <th>Minecraft Account Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{aC.accountData.firstName + ' ' + aC.accountData.lastName}}</td>
+                                <td>{{aC.accountData.username}}</td>
+                                <td>
+                                    {{
+                                        (aC.accountData.minecraftUsername) ?
+                                        aC.accountData.minecraftUsername : 'Not linked'
+                                    }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-sm-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">
+                        Account settings
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <a href="#" ng-click="aC.changePassword()" class="btn btn-warning btn-block">Change account password</a>
+                        </div>
+
+                        <div class="col-lg-6" ng-show="aC.accountData.minecraftUsername.length == null">
+                            <a href="#" ng-click="aC.linkAccount()" class="btn btn-success btn-block">Link Minecraft Account</a>
+                        </div>
+
+                        <div class="col-lg-6" ng-show="aC.accountData.minecraftUsername.length > 0">
+                            <a href="#" class="btn btn-danger btn-block" ng-click="aC.unlinkAccount()" >Unlink Minecraft Account</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-footer"></div>
+            </div>
+
+        </div>
+    </div>
+    <!-- /.row (main row) -->
+</section>
+<!-- /.content -->

@@ -1,37 +1,11 @@
 <?php
-	//error_reporting(E_ALL);
-	//ini_set("display_errors",1);
-	session_start();
-	include("php/includes/settings.php");
-	if($_SESSION['userToken']){
-		if($_GET['p']){
-			switch($_GET['p']){
-				case "account":
-					include("php/views/account.php");
-					break;
-				case "backups":
-					include("php/views/backups.php");
-					break;
-				case "plugins":
-					include("php/views/plugins.php");
-					break;
-				case "server":
-					include("php/views/soloserver.php");
-					break;
-				case "servers":
-					include("php/views/servers.php");
-					break;
-				case "settings":
-					include("php/views/settings.php");
-					break;
-				case "plugin":
-					include("php/views/plugin.php");
-					break;
-			}
-		}else {
-			include("php/views/dashboard.php");
-		}
-	}else if(!$_SESSION['userToken']){
-		include("php/views/loginPage.php");
-	}
-?>
+header("Access-Control-Allow-Origin: *");
+define('ROOT', __DIR__ . DIRECTORY_SEPARATOR);
+define('APP', ROOT . 'app' . DIRECTORY_SEPARATOR);
+// load application config (error reporting etc.)
+require APP . 'core/config.php';
+require APP . 'core/app.php';
+require APP . 'core/controller.php';
+require APP . 'models/jwt.php';
+
+$app = new Application();

@@ -1,0 +1,21 @@
+<div class="modal-header">
+    <h3 class="modal-title">Unlink Account</h3>
+</div>
+
+<form class="form-horizontal" ng-submit="uAMC.submit(confirm)">
+    <div class="modal-body">
+        <div class="container-fluid">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Are you sure?</label>
+                <div class="col-sm-5">
+                    <input type="checkbox" class="form-control" ng-model="confirm" required ng-init="confirm = false"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" ng-click="uAMC.cancel()">Close</button>
+        <button type="submit" class="btn btn-danger" ng-disabled="!confirm">Unlink</button>
+    </div>
+</form>

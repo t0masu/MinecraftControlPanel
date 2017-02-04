@@ -1,0 +1,32 @@
+<div class="form-box" id="login-box">
+    <div class="header">Sign In</div>
+    <form ng-submit="lC.submit(formData)" name="loginForm">
+        <div class="body bg-gray">
+            <div id="success" class="alert alert-success alert-dismissable" style="display: none">
+            <i class="fa fa-check"></i>
+            <b>Authentication Successful!</b> You will be transferred shortly.
+        </div>
+        <div id="error" class="alert alert-danger alert-dismissable" style="display: none" ng-style="{'display: none': lC.error}">
+            <i class="fa fa-ban"></i>
+            <b>Authentication Unsuccessful!</b> Your username or password was not correct. Please try again
+        </div>
+            <div class="form-group">
+                <input type="text" ng-model="formData.username" class="form-control" placeholder="User ID" required/>
+            </div>
+            <div class="form-group">
+                <input type="password" ng-model="formData.password" class="form-control" placeholder="Password" required/>
+            </div>
+        </div>
+        <div class="footer">
+            <input type="submit" class="btn bg-olive btn-block" value="Sign me in" ng-disabled="loginForm.$invalid">
+
+            <!-- <p><a href="#">I forgot my password</a></p>
+
+            <a href="register.html" class="text-center">Register a new membership</a> -->
+        </div>
+    </form>
+
+    <div class="margin text-center">
+        <span>MinecraftControlPanel &middot; t0masu</span>
+    </div>
+</div>
