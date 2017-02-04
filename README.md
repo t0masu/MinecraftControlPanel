@@ -6,31 +6,33 @@ Minecraft Control Panel written in PHP, used as a web management interface full 
 ======
 Status
 ======
-Minecraft Control Panel is currently in beta. It does not have an installer currently that is in the works, but for now here's a rough guide how to install it
+MCP is WIP at the moment, servers can be created if you create a host, then add a server on a host
 
 =============
 Prerequisites
 =============
-A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, must have mysql(PDO) and the libssh-php-5 addons installed on it.
+A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, must have mysql(PDO) and the libssh-php-5 (ssh) addons installed on it. As well as this have `npm` installed; have `bower` as a global module as this project uses it.
 
-1. Clone this repo to the webroot dir
-2. Edit the settings file under php/includes/
-3. Chanage the lines to your environment settings
-4. Create database from the sql file in the repo 
-5. Generate your own RSA Keys and put them in a directory accessable by the www user and set the path in the database table "cpanel_settings".
-6. Add your first user to the "cpanel_users" table with the script labelled "first_user.php" and add the chosen password to the first variable
-7. Run the script and copy/paste the base64_encoded string into the password field when adding the account to the database
-8. Login to the Control Panel with your credentials. Enjoy!
+1. Install Apache2/Nginx, PHP and addons, npm and bower to machine
+2. Clone repo into www root
+3. Run `npm install` - bower install will be run after as a postinstall script
+4. Use the `cpanel.sql` file to insert tables into database (this is temporary whilst its WIP; use phpmyadmin or equiv. to make it easier)
+
+Note - Passwords are bcyrpt hashes, the default in the `cpanel.sql` file is `password`. With the username being `admin`
+
+5. Adjust the config file in WWW ROOT `/app/core/config.php`
+6. Adjust the token secret for JWT
+7. Enjoy the panel, I will be updating this project weekly, I've got exams at the moment.
+
+Thank You!
 
 ========
 Features
 ========
 
 1. Remote server management via ssh from host installed with Control Panel
-2. Remote plugin installation on server
-3. Backup creation and download
-4. Start/Stop Server remotely!
-5. Manage dedicated server hosts to create many servers on
+2. Start/Stop Server remotely!
+3. Manage dedicated server hosts to create many servers on
 
 ==========
 To-Do List
@@ -39,4 +41,3 @@ To-Do List
 2. Add servers to the panel remotely
 3. Remove servers remotely
 4. Add new users + Manage user accounts
-5. Various other features I haven't thought of yet xD
