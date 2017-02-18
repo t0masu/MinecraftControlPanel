@@ -16,7 +16,7 @@ A *NIX Machine, with an Apache or Nginx webserver running with PHP 5 or later, m
 1. Install Apache2/Nginx, PHP and addons, npm and bower to machine
 2. Clone repo into www root
 3. Run `npm install` - bower install will be run after as a postinstall script
-4. Use the `cpanel.sql` file to insert tables into database (this is temporary whilst its WIP; use phpmyadmin or equiv. to make it easier)
+4. Use the `cpanel_setup.sql` file to insert tables into database (this is temporary whilst its WIP; use phpmyadmin or equiv. to make it easier)
 
 Note - Passwords are bcyrpt hashes, the default in the `cpanel.sql` file is `password`. With the username being `admin`
 
