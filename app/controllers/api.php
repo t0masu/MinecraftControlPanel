@@ -60,8 +60,21 @@ class Api extends Controller
 
                     $this->serversModel->createServer($jwt, $minecraftData, $hostData);
                     break;
-                default:
-
+                case "getServerData":
+                    $input = json_decode(file_get_contents("php://input"), 1);
+                    $this->serversModel->getServerData($jwt, $input);
+                    break;
+                case "startServer":
+                    $input = json_decode(file_get_contents("php://input"), 1);
+                    $this->serversModel->startServer($jwt, $input['id']);
+                    break;
+                case "rebootServer":
+                    $input = json_decode(file_get_contents("php://input"), 1);
+                    $this->serversModel->rebootServer($jwt, $input['id']);
+                    break;
+                case "stopServer":
+                    $input = json_decode(file_get_contents("php://input"), 1);
+                    $this->serversModel->stopServer($jwt, $input['id']);
                     break;
             }
         }
@@ -77,8 +90,10 @@ class Api extends Controller
                 case "versions":
                     $this->minecraftModel->fetchMinecraftVersions();
                     break;
-                case "":
-
+                case "getStatus":
+                    $input = json_decode(file_get_contents("php://input"), 1);
+                    $serverData = $this->serversModel->getAddress($jwt, $input['id']);
+                    echo $this->minecraftModel->getStatus($serverData['serverHost'], $serverData['serverPort']);
                     break;
             }
         }
@@ -109,5 +124,27 @@ class Api extends Controller
         }
     }
 
+    public function infophp()
+    {
+        phpinfo();
+    }
 
+    // public function ssh()
+    // {
+    //     $con = ssh2_connect('172.16.0.104', 22);
+    //     ssh2_auth_password($con, 'minecraft', 'minecraft');
+    //
+    //     $output = ssh2_exec($con, 'uptime');
+    //     stream_set_blocking($output, true);
+    //     $output = ssh2_fetch_stream($output, SSH2_STREAM_STDIO);
+    //     $data = stream_get_contents($output);
+    //
+    //     $data = explode(',', $data);
+    //     echo json_encode((object) $data);
+    // }
+
+    public function status()
+    {
+        echo json_encode($this->minecraftModel->getStatus('play.atlanticnetwork.org', 25565));
+    }
 }

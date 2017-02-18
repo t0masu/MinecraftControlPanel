@@ -47,7 +47,9 @@
                                 <td>{{item.serverHost}}</td>
                                 <td>{{item.serverPort}}</td>
                                 <td>{{item.serverVersion}}</td>
-                                <td></td>
+                                <td>
+                                    <button class="btn btn-primary" ui-sref="dashboard.server({serverId: item.serverId})">View</button> 
+                                </td>
                             </tr>
                         </tbody>
                     </table>
