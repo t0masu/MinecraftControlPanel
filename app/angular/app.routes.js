@@ -44,13 +44,6 @@ minecraftControlPanel.config(function($urlRouterProvider, $locationProvider, $st
             controller: 'serversController',
             controllerAs: 'sC'
         })
-        .state('dashboard.server', {
-            name: 'server',
-            url: '/server/:serverId',
-            templateUrl: '/app/views/servers/server.tpl.html',
-            controller: 'serverController',
-            controllerAs: 'sC'
-        })
         .state('dashboard.backups', {
             name: 'backups',
             url: '/backups',
@@ -87,7 +80,7 @@ minecraftControlPanel.run([
                 if (validToken == true) {
                     e.preventDefault();
                     $state.go('dashboard');
-                    // $state.reload();
+                    $state.reload();
                 } else {
                     return;
                 }

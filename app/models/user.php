@@ -44,7 +44,6 @@ class userModel {
                     "user" => $user['username'],
                     "firstName" => $user['firstName'],
                     "lastName" => $user['lastName'],
-                    "minecraftUsername" => $user['minecraftUsername'],
                     "access" => $user['status']
                 );
 

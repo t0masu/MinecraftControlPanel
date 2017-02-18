@@ -77,7 +77,7 @@ minecraftControlPanel.service('hostsService', ['$http', function($http)
     }
 }]);
 
-minecraftControlPanel.service('serversService', ['$http', '$q', function($http, $q) {
+minecraftControlPanel.service('serversService', ['$http', function($http) {
     var that = this;
 
     this.getUserServers = function()
@@ -88,12 +88,7 @@ minecraftControlPanel.service('serversService', ['$http', '$q', function($http, 
     this.createServerOnHost = function(data)
     {
         return $http.post("/api/servers/onHost", data);
-    };
-
-    this.fetchServerData = function(id)
-    {
-        return $http.post("/api/servers/getServerData", {"id":id});
-    };
+    }
 }]);
 
 minecraftControlPanel.service('accountService', ['$http', function($http)
